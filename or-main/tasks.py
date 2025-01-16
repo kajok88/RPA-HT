@@ -3,7 +3,11 @@ from robocorp import browser
 import requests
 from bs4 import BeautifulSoup
 
-@task
+
+from scrapegraphai.graphs import SmartScraperGraph
+#from scrapegraphai.utils import prettify_exec_info
+
+#@task
 def fetch_price():
 
     browser.configure(
@@ -44,3 +48,31 @@ def send_message(mes):
     message = mes
     url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={chat_id}&text={message}"
     print(requests.get(url).json()) # this sends the message
+
+@task
+def get_price_llm():
+    
+
+    graph_config = {
+    "llm": {
+        "model": "ollama/gemma2:2b",
+        "temperature": 1,
+        "format": "json",  # Ollama needs the format to be specified explicitly
+        #"model_tokens": 2000, #  depending on the model set context length
+        "base_url": "http://localhost:11434",  # set ollama URL of the local host (YOU CAN CHANGE IT, if you have a different endpoint
+    }
+    }
+
+    # ************************************************
+    # Create the SmartScraperGraph instance and run it
+    # ************************************************
+
+    smart_scraper_graph = SmartScraperGraph(
+    prompt="Give me the product price.",
+    # also accepts a string with the already downloaded HTML code
+    source="https://www.jimms.fi/fi/Product/Show/187900/fd-c-nor1c-02/fractal-design-north-charcoal-black-tg-dark-ikkunallinen-miditornikotelo-musta",
+    config=graph_config
+    )
+
+    result = smart_scraper_graph.run()
+    print(result)
